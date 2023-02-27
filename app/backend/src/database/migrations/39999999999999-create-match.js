@@ -1,6 +1,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable("teams", {
+    await queryInterface.createTable("matches", {
       id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -32,12 +32,12 @@ module.exports = {
         allowNull: false,
       },
       in_progress: {
-        type: Sequelize.BOOL,
+        type: Sequelize.BOOLEAN,
         allowNull: false,
       },
     });
   },
   down: async (queryInterface) => {
-    await queryInterface.dropTable("teams");
+    await queryInterface.dropTable("matches");
   },
 };
