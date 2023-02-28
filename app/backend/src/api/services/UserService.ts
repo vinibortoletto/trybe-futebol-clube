@@ -1,5 +1,5 @@
 import { ModelStatic } from 'sequelize';
-// import * as bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcryptjs';
 import IUserService from '../interfaces/IUserService';
 import ILoginInfo from '../interfaces/ILoginInfo';
 import User from '../../database/models/UserModel';
@@ -15,7 +15,9 @@ export default class UserService implements IUserService {
 
     if (!user) throw new Unauthorized(invalidFields);
 
-    // const isPasswordValid = bcrypt.compareSync(password, user?.password);
+    const isPasswordValid = bcrypt.compareSync(password, user?.password);
+
+    if (!isPasswordValid) throw new Unauthorized(invalidFields);
 
     return password;
   }
