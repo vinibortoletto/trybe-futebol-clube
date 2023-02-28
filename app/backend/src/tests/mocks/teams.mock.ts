@@ -19,3 +19,5 @@ export const teamList = [
   { id: 16, team_name: 'São Paulo' },
 ] as unknown as Team[];
 
+export const team = { id: 1, team_name: 'Avaí/Kindermann' } as unknown as Team
+

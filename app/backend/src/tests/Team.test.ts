@@ -22,4 +22,13 @@ describe('Integration tests for route /teams', function () {
       expect(response.status).to.equal(OK);
     });
   });
+
+  describe('findById method', () => {
+    it('should find team by id', async function () {
+      sinon.stub(Model, 'findByPk').resolves(teamsMock.team);
+      const response = await chai.request(app).get('/teams/1').send();
+      expect(response.body).to.deep.equal(teamsMock.team);
+      expect(response.status).to.equal(OK);
+    });
+  });
 });
