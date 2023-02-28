@@ -1,4 +1,5 @@
 import * as express from 'express';
+import ErrorHandler from './api/middlewares/ErrorHandler';
 import { teamsRouter, usersRouter } from './api/routers';
 
 class App {
@@ -11,7 +12,9 @@ class App {
 
     // Não remover essa rota
     this.app.get('/', (req, res) => res.json({ ok: true }));
+
     this.routes();
+    this.middlewares();
   }
 
   private config():void {
@@ -29,6 +32,10 @@ class App {
   private routes():void {
     this.app.use(teamsRouter);
     this.app.use(usersRouter);
+  }
+
+  private middlewares():void {
+    this.app.use(ErrorHandler.handle);
   }
 
   public start(PORT: string | number):void {
