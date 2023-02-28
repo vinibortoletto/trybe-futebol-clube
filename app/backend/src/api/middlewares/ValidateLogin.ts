@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import * as joi from 'joi';
+import { requiredFields } from '../../utils/errorMessages';
 import BadRequest from '../errors/BadRequest';
 
 const schema = joi.object({
@@ -14,7 +15,7 @@ export default class ValidateLogin {
     next: NextFunction,
   ): Response | void {
     const { error } = schema.validate(req.body);
-    const message = 'All fields must be filled';
+    const message = requiredFields;
     if (error) throw new BadRequest(message);
     next();
   }
