@@ -59,5 +59,15 @@ describe('Integration tests for route /login and /users', function () {
       expect(response.body).to.deep.equal(errorMessage);
       expect(response.status).to.equal(UNAUTHORIZED);
     });
+
+    it('should fail to login if password does not match any in database', async function () {
+      sinon.stub(Model, 'findOne').resolves(null);
+
+      const errorMessage = { message: invalidFields };
+      const response = await chai.request(app).post('/login').send(usersMock.wrongLoginInfo);
+
+      expect(response.body).to.deep.equal(errorMessage);
+      expect(response.status).to.equal(UNAUTHORIZED);
+    });
   });
 });
