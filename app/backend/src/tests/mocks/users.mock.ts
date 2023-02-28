@@ -20,3 +20,8 @@ export const invalidLoginInfo: ILoginInfo = {
   email: '@invalid.com',
   password,
 };
+
+export const wrongLoginInfo: ILoginInfo = {
+  email: 'wrong@email.com',
+  password
+}
