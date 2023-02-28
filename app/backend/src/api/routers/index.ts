@@ -1,5 +1,4 @@
 import teamsRouter from './teamsRouter';
+import usersRouter from './usersRouter';
 
-const placeholder = '';
-
-export { teamsRouter, placeholder };
+export { teamsRouter, usersRouter };
