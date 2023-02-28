@@ -28,5 +28,19 @@ describe('Integration tests for route /login and /users', function () {
       expect(response.body).to.deep.equal(usersMock.user.password);
       expect(response.status).to.equal(OK);
     });
+
+    it('should fail to login if user is invalid', async function () {
+      sinon.stub(Model, 'findOne').resolves(null);
+      
+      const body = {
+        email: 'invalid',
+        password: usersMock.user.password,
+      }
+
+      const response = await chai.request(app).post('/login').send(body);
+
+      expect(response.body).to.deep.equal(usersMock.user.password);
+      expect(response.status).to.equal(OK);
+    });
   });
 });
