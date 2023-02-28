@@ -7,6 +7,7 @@ import { app } from '../app';
 import { usersMock } from './mocks';
 import { Model } from 'sequelize';
 import { BAD_REQUEST, OK } from '../utils/httpStatusCodes';
+import { requiredFields } from '../utils/errorMessages'
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -29,15 +30,24 @@ describe('Integration tests for route /login and /users', function () {
       expect(response.status).to.equal(OK);
     });
 
-    it('should fail to login if email is invalid', async function () {
+    it('should fail to login if email is invalid or does not exists', async function () {
       sinon.stub(Model, 'findOne').resolves(null);
 
-      const errorMessage = { message: 'All fields must be filled' };
+      const errorMessage = { message: requiredFields };
       const response = await chai.request(app).post('/login').send(usersMock.invalidLoginInfo);
 
       expect(response.body).to.deep.equal(errorMessage);
       expect(response.status).to.equal(BAD_REQUEST);
     });
 
+    it('should fail to login if password is invalid or does not exists', async function () {
+      sinon.stub(Model, 'findOne').resolves(null);
+
+      const errorMessage = { message: requiredFields };
+      const response = await chai.request(app).post('/login').send(usersMock.invalidLoginInfo);
+
+      expect(response.body).to.deep.equal(errorMessage);
+      expect(response.status).to.equal(BAD_REQUEST);
+    });
   });
 });
