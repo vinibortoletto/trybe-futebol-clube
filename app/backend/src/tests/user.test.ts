@@ -6,8 +6,8 @@ import chaiHttp = require('chai-http');
 import { app } from '../app';
 import { usersMock } from './mocks';
 import { Model } from 'sequelize';
-import { BAD_REQUEST, OK } from '../utils/httpStatusCodes';
-import { requiredFields } from '../utils/errorMessages'
+import { BAD_REQUEST, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
+import { invalidFields, requiredFields } from '../utils/errorMessages'
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -48,6 +48,16 @@ describe('Integration tests for route /login and /users', function () {
 
       expect(response.body).to.deep.equal(errorMessage);
       expect(response.status).to.equal(BAD_REQUEST);
+    });
+
+    it('should fail to login if email does not match any in database', async function () {
+      sinon.stub(Model, 'findOne').resolves(null);
+
+      const errorMessage = { message: invalidFields };
+      const response = await chai.request(app).post('/login').send(usersMock.wrongLoginInfo);
+
+      expect(response.body).to.deep.equal(errorMessage);
+      expect(response.status).to.equal(UNAUTHORIZED);
     });
   });
 });
