@@ -4,10 +4,7 @@ import { Secret, verify } from 'jsonwebtoken';
 import { invalidToken, tokenNotFound } from '../../utils/errorMessages';
 import { Unauthorized } from '../errors';
 
-const schema = joi.object({
-  authorization: joi.string().required(),
-});
-
+const schema = joi.string().required();
 const secret = process.env.JTW_SECRET as Secret;
 
 export default class ValidateToken {
@@ -16,12 +13,19 @@ export default class ValidateToken {
     _res: Response,
     next: NextFunction,
   ) {
-    const { error } = schema.validate(req.headers);
+    const { authorization } = req.headers;
+    const { error } = schema.validate(authorization);
+
     if (error) throw new Unauthorized(tokenNotFound);
 
     const token = req.headers.authorization as string;
-    const isTokenValid = verify(token, secret);
-    if (!isTokenValid) throw new Unauthorized(invalidToken);
+
+    try {
+      const decodedUserInfo = verify(token, secret);
+      req.body.user = decodedUserInfo;
+    } catch (e) {
+      throw new Unauthorized(invalidToken);
+    }
 
     next();
   }
