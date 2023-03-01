@@ -16,9 +16,14 @@ export const validLoginInfo: ILoginInfo = {
   password: 'password',
 };
 
-export const invalidLoginInfo: ILoginInfo = {
+export const loginInfoWithInvalidEmail: ILoginInfo = {
   email: '@invalid.com',
-  password,
+  password: '123456',
+};
+
+export const loginInfoWithInvalidPassword: ILoginInfo = {
+  email: 'admin@admin.com',
+  password: '123',
 };
 
 export const wrongLoginInfo: ILoginInfo = {
