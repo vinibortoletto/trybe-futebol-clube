@@ -9,7 +9,7 @@ export default class UserController implements IUserController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const token = await this._service.login(req.body);
-      return res.status(OK).json(token);
+      return res.status(OK).json({ token });
     } catch (error) {
       next(error);
     }
