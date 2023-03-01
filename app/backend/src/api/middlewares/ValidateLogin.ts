@@ -1,11 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
 import * as joi from 'joi';
-import { requiredFields } from '../../utils/errorMessages';
+import { invalidFields, requiredFields } from '../../utils/errorMessages';
+import { Unauthorized } from '../errors';
 import BadRequest from '../errors/BadRequest';
 
 const schema = joi.object({
-  email: joi.string().email().required(),
-  password: joi.string().min(6).required(),
+  email: joi.string().email().required().messages({
+    'string.email': `${invalidFields}`,
+    'any.required': `${requiredFields}`,
+  }),
+  password: joi.string().min(6).required().messages({
+    'string.min': `${invalidFields}`,
+    'any.required': `${requiredFields}`,
+  }),
 });
 
 export default class ValidateLogin {
@@ -15,8 +22,8 @@ export default class ValidateLogin {
     next: NextFunction,
   ): Response | void {
     const { error } = schema.validate(req.body);
-    const message = requiredFields;
-    if (error) throw new BadRequest(message);
-    next();
+    if (!error) return next();
+    if (error.message === invalidFields) throw new Unauthorized(invalidFields);
+    throw new BadRequest(requiredFields);
   }
 }
