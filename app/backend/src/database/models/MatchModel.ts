@@ -1,5 +1,6 @@
 import { BOOLEAN, INTEGER, Model } from 'sequelize';
 import db from '.';
+import Team from './TeamModel';
 
 class Match extends Model {
   declare id: number;
@@ -60,3 +61,9 @@ Match.init(
 );
 
 export default Match;
+
+Match.belongsTo(Team, { foreignKey: 'homeTeamId', as: 'homeTeam' });
+Match.belongsTo(Team, { foreignKey: 'awayTeamId', as: 'awayTeam' });
+
+Team.hasMany(Match, { foreignKey: 'id', as: 'homeMatches' });
+Team.hasMany(Match, { foreignKey: 'id', as: 'awayMatches' });
