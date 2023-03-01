@@ -9,7 +9,7 @@ import { app } from '../app';
 import { usersMock } from './mocks';
 import { Model } from 'sequelize';
 import { BAD_REQUEST, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
-import { invalidFields, requiredFields } from '../utils/errorMessages'
+import { invalidFields, requiredFields, tokenNotFound } from '../utils/errorMessages'
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -17,7 +17,7 @@ const { expect } = chai;
 describe('Integration tests for route /login and /users', function () {
   afterEach(() => sinon.restore());
 
-  describe('login method', () => {
+  describe('login method', function() {
     it('should be able to login', async function () {
       sinon.stub(Model, 'findOne').resolves(usersMock.user);
 
@@ -82,4 +82,12 @@ describe('Integration tests for route /login and /users', function () {
       expect(response.status).to.equal(OK);
     });
   });
+
+  describe('getRole method', function () {
+    it('should fail to get role if token does not exists', async function () {
+      const response = await chai.request(app).get('/login/role').set('Authorization', '')
+      expect(response.body).to.deep.equal({message: tokenNotFound})
+      expect(response.status).to.equal(UNAUTHORIZED)
+    })
+  })
 });
