@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import * as joi from 'joi';
-import { Secret, verify } from 'jsonwebtoken';
-import { invalidToken, tokenNotFound } from '../../utils/errorMessages';
+import TokenHandler from '../../utils/TokenHandler';
+import { tokenNotFound } from '../../utils/errorMessages';
 import { Unauthorized } from '../errors';
 
 const schema = joi.string().required();
-const secret = process.env.JTW_SECRET as Secret;
 
 export default class ValidateToken {
   public static validate(
@@ -18,14 +17,9 @@ export default class ValidateToken {
 
     if (error) throw new Unauthorized(tokenNotFound);
 
-    const token = req.headers.authorization as string;
-
-    try {
-      const decodedUserInfo = verify(token, secret);
-      req.body.user = decodedUserInfo;
-    } catch (e) {
-      throw new Unauthorized(invalidToken);
-    }
+    const token: string = req.headers.authorization as string;
+    const decodedUserInfo = TokenHandler.decode(token);
+    req.body.user = decodedUserInfo;
 
     next();
   }
