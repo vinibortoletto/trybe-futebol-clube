@@ -1,5 +1,7 @@
 import { ModelStatic } from 'sequelize';
+import { teamNotFound } from '../../utils/errorMessages';
 import Team from '../../database/models/TeamModel';
+import NotFound from '../errors/NotFound';
 import ITeamService from '../interfaces/ITeamService';
 
 export default class TeamService implements ITeamService {
@@ -12,6 +14,7 @@ export default class TeamService implements ITeamService {
 
   async findById(id:number): Promise<Team | null> {
     const team = await this._model.findByPk(id);
+    if (!team) throw new NotFound(teamNotFound);
     return team;
   }
 }
