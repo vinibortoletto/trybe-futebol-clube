@@ -1,5 +1,7 @@
 import * as sinon from 'sinon';
 import * as chai from 'chai';
+import * as bcrypt from 'bcryptjs';
+
 // @ts-ignore
 import chaiHttp = require('chai-http');
 
@@ -68,6 +70,16 @@ describe('Integration tests for route /login and /users', function () {
 
       expect(response.body).to.deep.equal(errorMessage);
       expect(response.status).to.equal(UNAUTHORIZED);
+    });
+
+    it('should be able to login', async function () {
+      sinon.stub(Model, 'findOne').resolves(usersMock.user);
+      sinon.stub(bcrypt, 'compareSync').resolves(true)
+
+      const response = await chai.request(app).post('/login').send(usersMock.validLoginInfo);
+
+      expect(response.body).to.haveOwnProperty('token');
+      expect(response.status).to.equal(OK);
     });
   });
 });

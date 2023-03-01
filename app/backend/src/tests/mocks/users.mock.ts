@@ -13,7 +13,7 @@ export const user: User = {
 
 export const validLoginInfo: ILoginInfo = {
   email: "admin@admin.com",
-  password,
+  password: 'password',
 };
 
 export const invalidLoginInfo: ILoginInfo = {
