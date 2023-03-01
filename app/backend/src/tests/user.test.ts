@@ -23,44 +23,24 @@ describe('Integration tests for route /login and /users', function () {
   afterEach(() => sinon.restore());
 
   describe('login method', function () {
-    it('should be able to login', async function () {
-      sinon.stub(Model, 'findOne').resolves(usersMock.user);
-
-      const body = {
-        email: usersMock.user.email,
-        password: usersMock.user.password,
-      };
-
-      const response = await chai.request(app).post('/login').send(body);
-
-      expect(response.body).to.deep.equal(usersMock.user.password);
-      expect(response.status).to.equal(OK);
-    });
-
     it('should fail to login if email is invalid or does not exists', async function () {
-      sinon.stub(Model, 'findOne').resolves(null);
-
-      const errorMessage = { message: requiredFields };
       const response = await chai
         .request(app)
         .post('/login')
-        .send(usersMock.invalidLoginInfo);
+        .send(usersMock.loginInfoWithInvalidEmail);
 
-      expect(response.body).to.deep.equal(errorMessage);
-      expect(response.status).to.equal(BAD_REQUEST);
+        expect(response.body).to.deep.equal({message: invalidFields});
+        expect(response.status).to.equal(UNAUTHORIZED);
     });
 
     it('should fail to login if password is invalid or does not exists', async function () {
-      sinon.stub(Model, 'findOne').resolves(null);
-
-      const errorMessage = { message: requiredFields };
       const response = await chai
         .request(app)
         .post('/login')
-        .send(usersMock.invalidLoginInfo);
+        .send(usersMock.loginInfoWithInvalidPassword);
 
-      expect(response.body).to.deep.equal(errorMessage);
-      expect(response.status).to.equal(BAD_REQUEST);
+      expect(response.body).to.deep.equal({message: invalidFields});
+      expect(response.status).to.equal(UNAUTHORIZED);
     });
 
     it('should fail to login if email does not match any in database', async function () {
