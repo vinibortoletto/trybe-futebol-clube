@@ -23,6 +23,7 @@ export default class ValidateLogin {
   ): Response | void {
     const { error } = schema.validate(req.body);
     if (!error) return next();
+
     if (error.message === invalidFields) throw new Unauthorized(invalidFields);
     throw new BadRequest(requiredFields);
   }
