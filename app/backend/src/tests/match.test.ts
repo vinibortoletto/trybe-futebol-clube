@@ -15,7 +15,7 @@ describe('Integration tests for route /matches', function () {
   afterEach(() => sinon.restore());
 
   describe('findAll method', function () {
-    it('should find all teams', async function () {
+    it('should find all matches', async function () {
       sinon.stub(Model, 'findAll').resolves(matchesMock.matchList);
       const response = await chai.request(app).get('/matches').send();
       expect(response.body).to.deep.equal(matchesMock.matchList);
