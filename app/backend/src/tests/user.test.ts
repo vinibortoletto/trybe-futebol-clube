@@ -12,9 +12,9 @@ import { BAD_REQUEST, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
 import {
   invalidFields,
   invalidToken,
-  requiredFields,
   tokenNotFound,
 } from '../utils/errorMessages';
+import * as jwt from 'jsonwebtoken'
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -97,10 +97,23 @@ describe('Integration tests for route /login and /users', function () {
       const response = await chai
         .request(app)
         .get('/login/role')
-        .set('Authorization', usersMock.invalidToken);
+        .set('Authorization', usersMock.token);
 
       expect(response.body).to.deep.equal({ message: invalidToken });
       expect(response.status).to.equal(UNAUTHORIZED);
+    });
+
+    it('should be able to get role', async function () {
+      sinon.stub(Model, 'findOne').resolves(usersMock.user)
+      sinon.stub(jwt, 'verify').resolves(usersMock.user)
+
+      const response = await chai
+        .request(app)
+        .get('/login/role')
+        .set('Authorization', usersMock.token);
+
+      expect(response.body).to.deep.equal({ role: usersMock.user.role });
+      expect(response.status).to.equal(OK);
     });
   });
 });
