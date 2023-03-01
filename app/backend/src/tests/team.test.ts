@@ -39,5 +39,12 @@ describe('Integration tests for route /teams', function () {
       expect(response.body).to.deep.equal(teamsMock.team);
       expect(response.status).to.equal(OK);
     });
+
+    it('should fail to find team by id', async function () {
+      sinon.stub(Model, 'findByPk').resolves(null);
+      const response = await chai.request(app).get('/teams/999').send();
+      expect(response.body).to.deep.equal({message: teamNotFound});
+      expect(response.status).to.equal(NOT_FOUND);
+    });
   });
 });
