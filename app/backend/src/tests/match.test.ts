@@ -9,7 +9,8 @@ const { expect } = chai;
 import { app } from '../app';
 import { Model } from 'sequelize';
 import { matchesMock, usersMock } from './mocks';
-import { CREATED, OK } from '../utils/httpStatusCodes';
+import { CREATED, OK, UNPROCESSABLE_CONTENT } from '../utils/httpStatusCodes';
+import { sameTeams } from '../utils/errorMessages';
 
 describe('Integration tests for route /matches', function () {
   afterEach(() => sinon.restore());
@@ -52,7 +53,7 @@ describe('Integration tests for route /matches', function () {
   });
 
   describe('create method', function () {
-    it.only('should be able to create a new match', async function () {
+    it('should be able to create a new match', async function () {
       sinon.stub(Model, 'create').resolves(matchesMock.matchResponse);
 
       const response = await chai
@@ -63,6 +64,17 @@ describe('Integration tests for route /matches', function () {
 
       expect(response.body).to.deep.equal(matchesMock.matchResponse);
       expect(response.status).to.equal(CREATED);
+    });
+
+    it('should fail to create a new match with both teams being the same', async function () {
+      const response = await chai
+        .request(app)
+        .post('/matches')
+        .send(matchesMock.matchWithSameTeams)
+        .set('Authorization', usersMock.validToken);
+
+      expect(response.body).to.deep.equal({message: sameTeams});
+      expect(response.status).to.equal(UNPROCESSABLE_CONTENT);
     });
   });
 });
