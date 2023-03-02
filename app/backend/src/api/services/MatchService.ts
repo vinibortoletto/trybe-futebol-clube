@@ -1,8 +1,10 @@
 import { ModelStatic } from 'sequelize';
+import { sameTeams } from '../../utils/errorMessages';
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
 import { IMatch, IMatchService } from '../interfaces';
 import IGoals from '../interfaces/IGoals';
+import UnprocessableContent from '../errors/UnprocessableContent';
 
 export default class MatchService implements IMatchService {
   private _model: ModelStatic<Match> = Match;
@@ -43,7 +45,14 @@ export default class MatchService implements IMatchService {
     return 'Updated';
   }
 
+  private static validateMatch({ homeTeamId, awayTeamId }: IMatch): void {
+    const areTeamsTheSame = homeTeamId === awayTeamId;
+    if (areTeamsTheSame) throw new UnprocessableContent(sameTeams);
+  }
+
   public async create(newMatch: IMatch): Promise<Match> {
+    MatchService.validateMatch(newMatch);
+
     const match = await this._model.create({ ...newMatch, inProgress: true });
     return match;
   }
