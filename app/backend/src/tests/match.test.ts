@@ -8,7 +8,7 @@ const { expect } = chai;
 
 import { app } from '../app';
 import { Model } from 'sequelize';
-import { matchesMock } from './mocks';
+import { matchesMock, usersMock } from './mocks';
 import { OK } from '../utils/httpStatusCodes';
 
 describe('Integration tests for route /matches', function () {
@@ -19,6 +19,19 @@ describe('Integration tests for route /matches', function () {
       sinon.stub(Model, 'findAll').resolves(matchesMock.matchList);
       const response = await chai.request(app).get('/matches').send();
       expect(response.body).to.deep.equal(matchesMock.matchList);
+      expect(response.status).to.equal(OK);
+    });
+  });
+
+  describe('finish method', function () {
+    it('should be able to finish a match', async function () {
+      sinon.stub(Model, 'update').resolves([1]);
+      const response = await chai
+        .request(app)
+        .patch('/matches/1/finish')
+        .set('Authorization', usersMock.validToken);
+
+      expect(response.body).to.deep.equal({ message: 'Finished' });
       expect(response.status).to.equal(OK);
     });
   });
