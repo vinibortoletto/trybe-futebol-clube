@@ -1,4 +1,4 @@
-import { IMatch } from '../../api/interfaces';
+import IGoals from '../../api/interfaces/IGoals';
 import Match from '../../database/models/MatchModel';
 
 export const matchList = [
@@ -324,7 +324,23 @@ export const matchList = [
   },
 ] as unknown as Match[];
 
-export const score: IMatch = {
+export const score: IGoals = {
   homeTeamGoals: 3,
   awayTeamGoals: 1,
+};
+
+export const matchResponse: Match = {
+  id: 1,
+  homeTeamId: 16,
+  homeTeamGoals: 2,
+  awayTeamId: 8,
+  awayTeamGoals: 2,
+  inProgress: true,
+} as unknown as Match;
+
+export const matchBody = {
+  homeTeamId: 16, 
+  awayTeamId: 8, 
+  homeTeamGoals: 2,
+  awayTeamGoals: 2,
 };
