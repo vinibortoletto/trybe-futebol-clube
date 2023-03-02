@@ -1,4 +1,5 @@
-import Match from '../../database/models/MatchModel'
+import { IMatch } from '../../api/interfaces';
+import Match from '../../database/models/MatchModel';
 
 export const matchList = [
   {
@@ -322,3 +323,8 @@ export const matchList = [
     in_progress: 0,
   },
 ] as unknown as Match[];
+
+export const score: IMatch = {
+  homeTeamGoals: 3,
+  awayTeamGoals: 1,
+};
