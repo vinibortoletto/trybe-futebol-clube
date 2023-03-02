@@ -1,3 +1,4 @@
+import { IMatch } from '../../api/interfaces';
 import IGoals from '../../api/interfaces/IGoals';
 import Match from '../../database/models/MatchModel';
 
@@ -338,9 +339,16 @@ export const matchResponse: Match = {
   inProgress: true,
 } as unknown as Match;
 
-export const matchBody = {
+export const matchBody: IMatch = {
   homeTeamId: 16, 
   awayTeamId: 8, 
+  homeTeamGoals: 2,
+  awayTeamGoals: 2,
+};
+
+export const matchWithSameTeams: IMatch = {
+  homeTeamId: 16, 
+  awayTeamId: 16, 
   homeTeamGoals: 2,
   awayTeamGoals: 2,
 };
