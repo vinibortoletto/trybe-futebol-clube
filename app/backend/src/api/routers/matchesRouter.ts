@@ -15,4 +15,10 @@ router.patch(
   controller.finish.bind(controller),
 );
 
+router.patch(
+  '/matches/:id',
+  ValidateToken.validate,
+  controller.update.bind(controller),
+);
+
 export default router;
