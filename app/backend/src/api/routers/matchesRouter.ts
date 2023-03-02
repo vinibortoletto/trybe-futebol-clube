@@ -21,4 +21,10 @@ router.patch(
   controller.update.bind(controller),
 );
 
+router.post(
+  '/matches',
+  ValidateToken.validate,
+  controller.create.bind(controller),
+);
+
 export default router;
