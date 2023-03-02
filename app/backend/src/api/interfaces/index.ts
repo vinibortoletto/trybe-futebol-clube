@@ -9,6 +9,8 @@ import IUserService from './IUserService';
 import IMatchController from './IMatchController';
 import IMatchService from './IMatchService';
 
+import IMatch from './IMatch';
+
 export {
   ILoginInfo,
   ITeamController,
@@ -17,4 +19,5 @@ export {
   IUserService,
   IMatchController,
   IMatchService,
+  IMatch,
 };
