@@ -30,10 +30,10 @@ export default class MatchController implements IMatchController {
 
   public async update(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
-    const match = req.body;
+    const goals = req.body;
 
     try {
-      const updated = await this._service.update(match, Number(id));
+      const updated = await this._service.update(goals, Number(id));
       return res.status(OK).json({ message: updated });
     } catch (error) {
       next(error);
