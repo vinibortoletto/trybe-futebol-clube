@@ -35,4 +35,19 @@ describe('Integration tests for route /matches', function () {
       expect(response.status).to.equal(OK);
     });
   });
+
+  describe('update method', function () {
+    it('should be able to update a match in progress', async function () {
+      sinon.stub(Model, 'update').resolves([1]);
+
+      const response = await chai
+        .request(app)
+        .patch('/matches/1')
+        .send(matchesMock.score)
+        .set('Authorization', usersMock.validToken);
+
+      expect(response.body).to.deep.equal({ message: 'Updated' });
+      expect(response.status).to.equal(OK);
+    });
+  });
 });
