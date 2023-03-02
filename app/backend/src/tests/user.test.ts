@@ -8,10 +8,11 @@ import chaiHttp = require('chai-http');
 import { app } from '../app';
 import { usersMock } from './mocks';
 import { Model } from 'sequelize';
-import { BAD_REQUEST, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
+import { BAD_REQUEST, NOT_FOUND, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
 import {
   invalidFields,
   invalidToken,
+  requiredFields,
   tokenNotFound,
 } from '../utils/errorMessages';
 import * as jwt from 'jsonwebtoken'
@@ -23,17 +24,37 @@ describe('Integration tests for route /login and /users', function () {
   afterEach(() => sinon.restore());
 
   describe('login method', function () {
-    it('should fail to login if email is invalid or does not exists', async function () {
+    it('should fail to login if no email is received', async function () {
+      const response = await chai
+        .request(app)
+        .post('/login')
+        .send(usersMock.loginInfoWithoutEmail);
+
+        expect(response.body).to.deep.equal({message: requiredFields});
+        expect(response.status).to.equal(BAD_REQUEST);
+    });
+
+    it('should fail to login if no password received', async function () {
+      const response = await chai
+        .request(app)
+        .post('/login')
+        .send(usersMock.loginInfoWithoutPassword);
+
+      expect(response.body).to.deep.equal({message: requiredFields});
+      expect(response.status).to.equal(BAD_REQUEST);
+    });
+
+    it('should fail to login if email is invalid', async function () {
       const response = await chai
         .request(app)
         .post('/login')
         .send(usersMock.loginInfoWithInvalidEmail);
 
-        expect(response.body).to.deep.equal({message: invalidFields});
-        expect(response.status).to.equal(UNAUTHORIZED);
+      expect(response.body).to.deep.equal({message: invalidFields});
+      expect(response.status).to.equal(UNAUTHORIZED);
     });
 
-    it('should fail to login if password is invalid or does not exists', async function () {
+    it('should fail to login if password is invalid', async function () {
       const response = await chai
         .request(app)
         .post('/login')
