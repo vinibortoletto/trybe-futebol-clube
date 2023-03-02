@@ -118,7 +118,7 @@ describe('Integration tests for route /login and /users', function () {
       const response = await chai
         .request(app)
         .get('/login/role')
-        .set('Authorization', usersMock.token);
+        .set('Authorization', usersMock.invalidToken);
 
       expect(response.body).to.deep.equal({ message: invalidToken });
       expect(response.status).to.equal(UNAUTHORIZED);
@@ -131,7 +131,7 @@ describe('Integration tests for route /login and /users', function () {
       const response = await chai
         .request(app)
         .get('/login/role')
-        .set('Authorization', usersMock.token);
+        .set('Authorization', usersMock.validToken);
 
       expect(response.body).to.deep.equal({ role: usersMock.user.role });
       expect(response.status).to.equal(OK);
