@@ -1,7 +1,7 @@
 import { ModelStatic } from 'sequelize';
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
-import { IMatchService } from '../interfaces';
+import { IMatch, IMatchService } from '../interfaces';
 
 export default class MatchService implements IMatchService {
   private _model: ModelStatic<Match> = Match;
@@ -29,5 +29,16 @@ export default class MatchService implements IMatchService {
     );
 
     return 'Finished';
+  }
+
+  public async update(match: IMatch, id: number): Promise<string> {
+    await this._model.update(
+      { homeTeamGoals: match.homeTeamGoals,
+        awayTeamGoals: match.awayTeamGoals,
+      },
+      { where: { id } },
+    );
+
+    return 'Updated';
   }
 }
