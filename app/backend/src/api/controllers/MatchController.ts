@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { OK } from '../../utils/httpStatusCodes';
+import { CREATED, OK } from '../../utils/httpStatusCodes';
 import IMatchController from '../interfaces/IMatchController';
 import IMatchService from '../interfaces/IMatchService';
 
@@ -35,6 +35,17 @@ export default class MatchController implements IMatchController {
     try {
       const updated = await this._service.update(goals, Number(id));
       return res.status(OK).json({ message: updated });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async create(req: Request, res: Response, next: NextFunction) {
+    const newMatch = req.body;
+
+    try {
+      const match = await this._service.create(newMatch);
+      return res.status(CREATED).json(match);
     } catch (error) {
       next(error);
     }
