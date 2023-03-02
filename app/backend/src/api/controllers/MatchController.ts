@@ -6,7 +6,7 @@ import IMatchService from '../interfaces/IMatchService';
 export default class MatchController implements IMatchController {
   constructor(private _service: IMatchService) {}
 
-  async findAll(req: Request, res: Response, next: NextFunction) {
+  public async findAll(req: Request, res: Response, next: NextFunction) {
     const { inProgress } = req.query;
 
     try {
