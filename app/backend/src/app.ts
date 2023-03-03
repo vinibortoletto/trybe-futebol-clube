@@ -1,6 +1,6 @@
 import * as express from 'express';
 import ErrorHandler from './api/middlewares/ErrorHandler';
-import { teamsRouter, usersRouter, matchesRouter } from './api/routers';
+import { teamsRouter, usersRouter, matchesRouter, leaderboardRouter } from './api/routers';
 
 class App {
   public app: express.Express;
@@ -33,6 +33,7 @@ class App {
     this.app.use(teamsRouter);
     this.app.use(usersRouter);
     this.app.use(matchesRouter);
+    this.app.use(leaderboardRouter);
   }
 
   private middlewares():void {
