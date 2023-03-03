@@ -352,3 +352,10 @@ export const matchWithSameTeams: IMatch = {
   homeTeamGoals: 2,
   awayTeamGoals: 2,
 };
+
+export const matchWithInvalidTeams: IMatch = {
+  homeTeamId: 999, 
+  awayTeamId: 777, 
+  homeTeamGoals: 2,
+  awayTeamGoals: 2,
+};
