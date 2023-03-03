@@ -8,16 +8,10 @@ export default class ErrorHandler {
     res: Response,
     _next: NextFunction,
   ): Response {
-    const errorMessage = 'Internal Server Error';
-
-    if (err.message === errorMessage) {
-      return res
-        .status(INTERNAL_SERVER_ERROR)
-        .json({ message: errorMessage });
-    }
+    const statusCode = Number(err.stack) || INTERNAL_SERVER_ERROR;
 
     return res
-      .status(Number(err.stack))
+      .status(statusCode)
       .json({ message: err.message });
   }
 }
