@@ -9,8 +9,8 @@ const { expect } = chai;
 import { app } from '../app';
 import { Model } from 'sequelize';
 import { matchesMock, usersMock } from './mocks';
-import { CREATED, OK, UNPROCESSABLE_CONTENT } from '../utils/httpStatusCodes';
-import { sameTeams } from '../utils/errorMessages';
+import { CREATED, NOT_FOUND, OK, UNPROCESSABLE_CONTENT } from '../utils/httpStatusCodes';
+import { invalidTeam, sameTeams } from '../utils/errorMessages';
 
 describe('Integration tests for route /matches', function () {
   afterEach(() => sinon.restore());
@@ -75,6 +75,17 @@ describe('Integration tests for route /matches', function () {
 
       expect(response.body).to.deep.equal({message: sameTeams});
       expect(response.status).to.equal(UNPROCESSABLE_CONTENT);
+    });
+
+    it('should fail to create a new match with a team that does not exists', async function () {
+      const response = await chai
+        .request(app)
+        .post('/matches')
+        .send(matchesMock.matchWithInvalidTeams)
+        .set('Authorization', usersMock.validToken);
+
+      expect(response.body).to.deep.equal({message: invalidTeam});
+      expect(response.status).to.equal(NOT_FOUND);
     });
   });
 });
