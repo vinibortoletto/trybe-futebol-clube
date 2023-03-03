@@ -11,6 +11,9 @@ import IMatchService from './IMatchService';
 
 import IMatch from './IMatch';
 
+import ILeaderboardController from './ILeaderboardController';
+import ILeaderboardService from './ILeaderboardService';
+
 export {
   ILoginInfo,
   ITeamController,
@@ -20,4 +23,6 @@ export {
   IMatchController,
   IMatchService,
   IMatch,
+  ILeaderboardController,
+  ILeaderboardService,
 };
