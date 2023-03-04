@@ -17,8 +17,8 @@ const { expect } = chai;
 describe('Integration tests for route /leaderboard/home', function () {
   afterEach(() => sinon.restore());
 
-  describe('findAllHome method', function () {
-    it('should be able to find all home leaderboard', async function () {
+  describe('getHomeLeaderboard method', function () {
+    it('should be able to get home leaderboard', async function () {
       const findAllMatchStub = sinon.stub(Match, 'findAll');
       const findAllTeamStub = sinon.stub(Team, 'findAll');
 
