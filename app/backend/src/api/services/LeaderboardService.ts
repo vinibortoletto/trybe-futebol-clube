@@ -9,18 +9,20 @@ export default class LeaderboardService implements ILeaderboardService {
   private _matchModel: ModelStatic<Match> = Match;
   private _teamModel: ModelStatic<Team> = Team;
 
-  private static calcTotalAwayVictories(
-    matchList: IMatch[],
-  ): number {
-    return matchList.reduce((acc, { homeTeamGoals, awayTeamGoals }) =>
-      (awayTeamGoals > homeTeamGoals ? acc + 1 : acc), 0);
+  private static calcTotalAwayVictories(matchList: IMatch[]): number {
+    return matchList.reduce(
+      (acc, { homeTeamGoals, awayTeamGoals }) =>
+        (awayTeamGoals > homeTeamGoals ? acc + 1 : acc),
+      0,
+    );
   }
 
-  private static calcTotalHomeVictories(
-    matchList: IMatch[],
-  ): number {
-    return matchList.reduce((acc, { homeTeamGoals, awayTeamGoals }) =>
-      (homeTeamGoals > awayTeamGoals ? acc + 1 : acc), 0);
+  private static calcTotalHomeVictories(matchList: IMatch[]): number {
+    return matchList.reduce(
+      (acc, { homeTeamGoals, awayTeamGoals }) =>
+        (homeTeamGoals > awayTeamGoals ? acc + 1 : acc),
+      0,
+    );
   }
 
   private static calcTotalAwayLosses(matchList: IMatch[]): number {
@@ -53,9 +55,7 @@ export default class LeaderboardService implements ILeaderboardService {
   ): number {
     return matchList.reduce(
       (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (type === 'favor'
-          ? acc + awayTeamGoals
-          : acc + homeTeamGoals),
+        (type === 'favor' ? acc + awayTeamGoals : acc + homeTeamGoals),
       0,
     );
   }
@@ -66,11 +66,28 @@ export default class LeaderboardService implements ILeaderboardService {
   ): number {
     return matchList.reduce(
       (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (type === 'favor'
-          ? acc + homeTeamGoals
-          : acc + awayTeamGoals),
+        (type === 'favor' ? acc + homeTeamGoals : acc + awayTeamGoals),
       0,
     );
+  }
+
+  private static calcGoalsBalance(matchList: IMatch[]): number {
+    const goalsFavor = LeaderboardService.calcHomeGoals(matchList, 'favor');
+    const goalsOwn = LeaderboardService.calcHomeGoals(matchList, 'own');
+    return goalsFavor - goalsOwn;
+  }
+
+  private static calcTotalPoints(matchList: IMatch[]): number {
+    const totalVictories = LeaderboardService.calcTotalHomeVictories(matchList);
+    const totalDraws = LeaderboardService.calcTotalDraws(matchList);
+    return totalVictories * 3 + totalDraws;
+  }
+
+  private static calcEfficiency(matchList: IMatch[]): string {
+    const totalPoints = LeaderboardService.calcTotalPoints(matchList);
+    const totalGames = matchList.length;
+    const totalEfficiency = (totalPoints / (totalGames * 3)) * 100;
+    return totalEfficiency.toFixed(2);
   }
 
   private async findAllHomeMatchByTeam(team: Team): Promise<Match[]> {
@@ -86,26 +103,38 @@ export default class LeaderboardService implements ILeaderboardService {
 
   private async createHomeLeaderboard(team: Team) {
     const matchList: Match[] = await this.findAllHomeMatchByTeam(team);
-    const totalVictories = LeaderboardService.calcTotalHomeVictories(matchList);
-    const totalDraws = LeaderboardService.calcTotalDraws(matchList);
 
     return {
       name: team.teamName,
-      totalPoints: totalVictories * 3 + totalDraws,
+      totalPoints: LeaderboardService.calcTotalPoints(matchList),
       totalGames: matchList.length,
       totalVictories: LeaderboardService.calcTotalHomeVictories(matchList),
       totalDraws: LeaderboardService.calcTotalDraws(matchList),
       totalLosses: LeaderboardService.calcTotalHomeLosses(matchList),
       goalsFavor: LeaderboardService.calcHomeGoals(matchList, 'favor'),
       goalsOwn: LeaderboardService.calcHomeGoals(matchList, 'own'),
+      goalsBalance: LeaderboardService.calcGoalsBalance(matchList),
+      efficiency: LeaderboardService.calcEfficiency(matchList),
     };
+  }
+
+  private static sortLeaderboard(leaderboard: ILeaderboard[]): ILeaderboard[] {
+    return leaderboard.sort((a: ILeaderboard, b: ILeaderboard) => (
+      b.totalPoints - a.totalPoints
+        || b.totalVictories - a.totalVictories
+        || b.goalsBalance - a.goalsBalance
+        || b.goalsFavor - a.goalsFavor
+        || b.goalsOwn - a.goalsOwn
+    ));
   }
 
   public async findAllHome(): Promise<ILeaderboard[]> {
     const teamList: Team[] = await this._teamModel.findAll();
 
-    return Promise.all(teamList.map(
-      async (team) => this.createHomeLeaderboard(team),
-    ));
+    const leaderboard: ILeaderboard[] = await Promise.all(
+      teamList.map(async (team) => this.createHomeLeaderboard(team)),
+    );
+
+    return LeaderboardService.sortLeaderboard(leaderboard);
   }
 }
