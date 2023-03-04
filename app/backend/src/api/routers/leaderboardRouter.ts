@@ -6,6 +6,6 @@ const router = Router();
 const service = new LeaderboardService();
 const controller = new LeaderboardController(service);
 
-router.get('/leaderboard/home', controller.findAllHome.bind(controller));
+router.get('/leaderboard/home', controller.getHomeLeaderboard.bind(controller));
 
 export default router;

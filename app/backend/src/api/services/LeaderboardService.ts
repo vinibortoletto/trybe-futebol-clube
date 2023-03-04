@@ -128,7 +128,7 @@ export default class LeaderboardService implements ILeaderboardService {
     ));
   }
 
-  public async findAllHome(): Promise<ILeaderboardRow[]> {
+  public async getHomeLeaderboard(): Promise<ILeaderboardRow[]> {
     const teamList: Team[] = await this._teamModel.findAll();
 
     const leaderboard: ILeaderboardRow[] = await Promise.all(
