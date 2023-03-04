@@ -6,8 +6,7 @@ import chaiHttp = require('chai-http');
 
 import { app } from '../app';
 import { OK } from '../utils/httpStatusCodes';
-import { leaderboardMock, matchesMock, teamsMock } from './mocks';
-import { Model } from 'sequelize';
+import { leaderboardMock, teamsMock } from './mocks';
 import Match from '../database/models/MatchModel';
 import Team from '../database/models/TeamModel';
 
@@ -33,6 +32,26 @@ describe('Integration tests for route /leaderboard/home', function () {
       const response = await chai.request(app).get('/leaderboard/home');
 
       expect(response.body).to.deep.equal(leaderboardMock.homeLeaderboard);
+      expect(response.status).to.equal(OK);
+    });
+  });
+
+  describe('getAwayLeaderboard method', function () {
+    it('should be able to get away leaderboard', async function () {
+      const findAllMatchStub = sinon.stub(Match, 'findAll');
+      const findAllTeamStub = sinon.stub(Team, 'findAll');
+
+      findAllTeamStub.resolves(teamsMock.teamList)
+      
+      teamsMock.teamList.forEach((_team, index) => {
+        findAllMatchStub
+          .onCall(index)
+          .resolves(leaderboardMock.awayMatchList[index])
+      })
+
+      const response = await chai.request(app).get('/leaderboard/away');
+
+      expect(response.body).to.deep.equal(leaderboardMock.awayLeaderboard);
       expect(response.status).to.equal(OK);
     });
   });
