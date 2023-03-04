@@ -1,4 +1,4 @@
-export default interface ILeaderboard {
+export default interface ILeaderboardRow {
   name: string;
   totalPoints: number;
   totalGames: number;

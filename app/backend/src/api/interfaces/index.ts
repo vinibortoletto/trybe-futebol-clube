@@ -13,6 +13,7 @@ import IMatch from './IMatch';
 
 import ILeaderboardController from './ILeaderboardController';
 import ILeaderboardService from './ILeaderboardService';
+import ILeaderboardRow from './ILeaderboardRow';
 
 export {
   ILoginInfo,
@@ -25,4 +26,5 @@ export {
   IMatch,
   ILeaderboardController,
   ILeaderboardService,
+  ILeaderboardRow,
 };

@@ -1,5 +1,5 @@
-import ILeaderboard from './ILeaderboard';
+import ILeaderboardRow from './ILeaderboardRow';
 
 export default interface ILeaderboardService {
-  findAllHome(): Promise<ILeaderboard[]>;
+  findAllHome(): Promise<ILeaderboardRow[]>;
 }

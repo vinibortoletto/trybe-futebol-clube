@@ -2,7 +2,7 @@ import { ModelStatic } from 'sequelize';
 
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
-import ILeaderboard from '../interfaces/ILeaderboard';
+import ILeaderboardRow from '../interfaces/ILeaderboardRow';
 import { ILeaderboardService, IMatch } from '../interfaces';
 
 export default class LeaderboardService implements ILeaderboardService {
@@ -118,8 +118,8 @@ export default class LeaderboardService implements ILeaderboardService {
     };
   }
 
-  private static sortLeaderboard(leaderboard: ILeaderboard[]): ILeaderboard[] {
-    return leaderboard.sort((a: ILeaderboard, b: ILeaderboard) => (
+  private static sortLeaderboard(leaderboard: ILeaderboardRow[]): ILeaderboardRow[] {
+    return leaderboard.sort((a: ILeaderboardRow, b: ILeaderboardRow) => (
       b.totalPoints - a.totalPoints
         || b.totalVictories - a.totalVictories
         || b.goalsBalance - a.goalsBalance
@@ -128,10 +128,10 @@ export default class LeaderboardService implements ILeaderboardService {
     ));
   }
 
-  public async findAllHome(): Promise<ILeaderboard[]> {
+  public async findAllHome(): Promise<ILeaderboardRow[]> {
     const teamList: Team[] = await this._teamModel.findAll();
 
-    const leaderboard: ILeaderboard[] = await Promise.all(
+    const leaderboard: ILeaderboardRow[] = await Promise.all(
       teamList.map(async (team) => this.createHomeLeaderboard(team)),
     );
 
