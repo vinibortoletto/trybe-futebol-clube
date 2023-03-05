@@ -73,7 +73,10 @@ export default class LeaderboardService implements ILeaderboardService {
     );
   }
 
-  private static calcGoalsBalance(matchList: IMatch[], matchLocation: TMatchLocation): number {
+  private static calcGoalsBalance(
+    matchList: IMatch[],
+    matchLocation: TMatchLocation,
+  ): number {
     const goalsFavor = matchLocation === 'home'
       ? LeaderboardService.calcHomeGoals(matchList, 'favor')
       : LeaderboardService.calcAwayGoals(matchList, 'favor');
@@ -85,7 +88,10 @@ export default class LeaderboardService implements ILeaderboardService {
     return goalsFavor - goalsOwn;
   }
 
-  private static calcTotalPoints(matchList: IMatch[], matchLocation: TMatchLocation): number {
+  private static calcTotalPoints(
+    matchList: IMatch[],
+    matchLocation: TMatchLocation,
+  ): number {
     const totalVictories = matchLocation === 'home'
       ? LeaderboardService.calcTotalHomeVictories(matchList)
       : LeaderboardService.calcTotalAwayVictories(matchList);
@@ -94,8 +100,14 @@ export default class LeaderboardService implements ILeaderboardService {
     return totalVictories * 3 + totalDraws;
   }
 
-  private static calcEfficiency(matchList: IMatch[], matchLocation: TMatchLocation): string {
-    const totalPoints = LeaderboardService.calcTotalPoints(matchList, matchLocation);
+  private static calcEfficiency(
+    matchList: IMatch[],
+    matchLocation: TMatchLocation,
+  ): string {
+    const totalPoints = LeaderboardService.calcTotalPoints(
+      matchList,
+      matchLocation,
+    );
     const totalGames = matchList.length;
     const totalEfficiency = (totalPoints / (totalGames * 3)) * 100;
     return totalEfficiency.toFixed(2);
@@ -157,14 +169,17 @@ export default class LeaderboardService implements ILeaderboardService {
     };
   }
 
-  private static sortLeaderboard(leaderboard: ILeaderboardRow[]): ILeaderboardRow[] {
-    return leaderboard.sort((a: ILeaderboardRow, b: ILeaderboardRow) => (
-      b.totalPoints - a.totalPoints
+  private static sortLeaderboard(
+    leaderboard: ILeaderboardRow[],
+  ): ILeaderboardRow[] {
+    return leaderboard.sort(
+      (a: ILeaderboardRow, b: ILeaderboardRow) =>
+        b.totalPoints - a.totalPoints
         || b.totalVictories - a.totalVictories
         || b.goalsBalance - a.goalsBalance
         || b.goalsFavor - a.goalsFavor
-        || b.goalsOwn - a.goalsOwn
-    ));
+        || b.goalsOwn - a.goalsOwn,
+    );
   }
 
   public async getHomeLeaderboard(): Promise<ILeaderboardRow[]> {
@@ -184,6 +199,50 @@ export default class LeaderboardService implements ILeaderboardService {
       teamList.map(async (team) => this.createAwayLeaderboard(team)),
     );
 
+    return LeaderboardService.sortLeaderboard(leaderboard);
+  }
+
+  public static createNewTeam(
+    teamName: string,
+    homeTeam: ILeaderboardRow,
+    awayTeam: ILeaderboardRow,
+  ): ILeaderboardRow {
+    const newTeam: ILeaderboardRow = {
+      name: teamName,
+      totalPoints: homeTeam.totalPoints + awayTeam.totalPoints,
+      totalGames: homeTeam.totalGames + awayTeam.totalGames,
+      totalVictories: homeTeam.totalVictories + awayTeam.totalVictories,
+      totalDraws: homeTeam.totalDraws + awayTeam.totalDraws,
+      totalLosses: homeTeam.totalLosses + awayTeam.totalLosses,
+      goalsFavor: homeTeam.goalsFavor + awayTeam.goalsFavor,
+      goalsOwn: homeTeam.goalsOwn + awayTeam.goalsOwn,
+      goalsBalance: homeTeam.goalsBalance + awayTeam.goalsBalance,
+      efficiency: '',
+    };
+
+    newTeam.efficiency = ((newTeam.totalPoints / (newTeam.totalGames * 3)) * 100).toFixed(2);
+
+    return newTeam;
+  }
+
+  public async getLeaderboard(): Promise<ILeaderboardRow[]> {
+    const teamList: Team[] = await this._teamModel.findAll();
+    const leaderboard: ILeaderboardRow[] = await Promise.all(
+      teamList.map(async ({ teamName }) => {
+        const homeLeaderboard = await this.getHomeLeaderboard();
+        const awayLeaderboard = await this.getAwayLeaderboard();
+        const indexOfHomeTeam = homeLeaderboard.findIndex(
+          ({ name }) => name === teamName,
+        );
+        const indexOfAwayTeam = awayLeaderboard.findIndex(
+          ({ name }) => name === teamName,
+        );
+        const homeTeam = homeLeaderboard[indexOfHomeTeam];
+        const awayTeam = awayLeaderboard[indexOfAwayTeam];
+        const newTeam = LeaderboardService.createNewTeam(teamName, homeTeam, awayTeam);
+        return newTeam;
+      }),
+    );
     return LeaderboardService.sortLeaderboard(leaderboard);
   }
 }
