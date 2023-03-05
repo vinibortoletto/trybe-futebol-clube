@@ -13,7 +13,7 @@ import Team from '../database/models/TeamModel';
 chai.use(chaiHttp);
 const { expect } = chai;
 
-describe('Integration tests for route /leaderboard/home', function () {
+describe('Integration tests for route /leaderboard', function () {
   afterEach(() => sinon.restore());
 
   describe('getHomeLeaderboard method', function () {
@@ -52,6 +52,14 @@ describe('Integration tests for route /leaderboard/home', function () {
       const response = await chai.request(app).get('/leaderboard/away');
 
       expect(response.body).to.deep.equal(leaderboardMock.awayLeaderboard);
+      expect(response.status).to.equal(OK);
+    });
+  });
+
+  describe('getLeaderboard method', function () {
+    it('should be able to get leaderboard', async function () {
+      const response = await chai.request(app).get('/leaderboard/');
+      expect(response.body).to.deep.equal(leaderboardMock.leaderboard);
       expect(response.status).to.equal(OK);
     });
   });
