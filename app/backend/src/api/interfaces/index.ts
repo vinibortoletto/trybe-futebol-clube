@@ -15,6 +15,8 @@ import ILeaderboardController from './ILeaderboardController';
 import ILeaderboardService from './ILeaderboardService';
 import ILeaderboardRow from './ILeaderboardRow';
 
+import IGoals from './IGoals';
+
 export {
   ILoginInfo,
   ITeamController,
@@ -27,4 +29,5 @@ export {
   ILeaderboardController,
   ILeaderboardService,
   ILeaderboardRow,
+  IGoals,
 };
