@@ -5,6 +5,7 @@ import ITeamService from './ITeamService';
 
 import IUserController from './IUserController';
 import IUserService from './IUserService';
+import IUser from './IUser';
 
 import IMatchController from './IMatchController';
 import IMatchService from './IMatchService';
@@ -24,6 +25,7 @@ export {
   ITeamService,
   IUserController,
   IUserService,
+  IUser,
   IMatchController,
   IMatchService,
   IMatch,
