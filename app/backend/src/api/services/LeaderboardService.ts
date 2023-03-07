@@ -63,21 +63,17 @@ export default class LeaderboardService implements ILeaderboardService {
     return (totalVictories * 3) + totalDraws;
   }
 
-  private static calcGoals(matchList: Match[], teamId: number, type: 'favor' | 'own'): number {
+  private static calcGoals(
+    matchList: Match[],
+    teamId: number,
+    type: 'favor' | 'own',
+  ): number {
     return matchList.reduce((acc: number, match: Match) => {
       const { homeTeamId, homeTeamGoals, awayTeamGoals } = match;
 
-      let totalGoals = acc;
-
-      if (type === 'favor') {
-        const teamGoals = homeTeamId === teamId ? homeTeamGoals : awayTeamGoals;
-        totalGoals += teamGoals;
-        return totalGoals;
-      }
-
-      const adversaryGoals = homeTeamId === teamId ? awayTeamGoals : homeTeamGoals;
-      totalGoals += adversaryGoals;
-      return totalGoals;
+      return type === 'favor'
+        ? acc + (homeTeamId === teamId ? homeTeamGoals : awayTeamGoals)
+        : acc + (homeTeamId === teamId ? awayTeamGoals : homeTeamGoals);
     }, 0);
   }
 
