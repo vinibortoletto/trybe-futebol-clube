@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import * as joi from 'joi';
+import { JwtPayload } from 'jsonwebtoken';
 import TokenHandler from '../../utils/TokenHandler';
 import { tokenNotFound } from '../../utils/errorMessages';
 import { Unauthorized } from '../errors';
@@ -18,7 +19,7 @@ export default class ValidateToken {
     if (error) throw new Unauthorized(tokenNotFound);
 
     const token: string = req.headers.authorization as string;
-    const decodedUserInfo = TokenHandler.decode(token);
+    const decodedUserInfo: string | JwtPayload = TokenHandler.decode(token);
     req.body.user = decodedUserInfo;
 
     next();
