@@ -9,7 +9,6 @@ import { OK } from '../utils/httpStatusCodes';
 import { leaderboardMock, teamsMock } from './mocks';
 import Match from '../database/models/MatchModel';
 import Team from '../database/models/TeamModel';
-import { Model } from 'sequelize';
 
 chai.use(chaiHttp);
 const { expect } = chai;

@@ -8,7 +8,7 @@ import chaiHttp = require('chai-http');
 import { app } from '../app';
 import { usersMock } from './mocks';
 import { Model } from 'sequelize';
-import { BAD_REQUEST, NOT_FOUND, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
+import { BAD_REQUEST, OK, UNAUTHORIZED } from '../utils/httpStatusCodes';
 import {
   invalidFields,
   invalidToken,
