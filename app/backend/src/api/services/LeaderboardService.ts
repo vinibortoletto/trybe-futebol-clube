@@ -1,171 +1,122 @@
 import { ModelStatic } from 'sequelize';
-
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
 import ILeaderboardRow from '../interfaces/ILeaderboardRow';
-import { ILeaderboardService, IMatch } from '../interfaces';
-
-type TMatchLocation = 'home' | 'away';
+import { ILeaderboardService } from '../interfaces';
+import TTeamType from '../types/TTeamType';
 
 export default class LeaderboardService implements ILeaderboardService {
   private _matchModel: ModelStatic<Match> = Match;
   private _teamModel: ModelStatic<Team> = Team;
 
-  private static calcTotalAwayVictories(matchList: IMatch[]): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (awayTeamGoals > homeTeamGoals ? acc + 1 : acc),
-      0,
-    );
+  private static getTeamMatchList(
+    team: Team,
+    teamType: TTeamType,
+    matchList: Match[],
+  ): Match[] {
+    if (teamType === 'both') {
+      return matchList.filter((match: Match) => {
+        const { homeTeamId } = match;
+        const { awayTeamId } = match;
+        if (homeTeamId !== team.id && awayTeamId !== team.id) return;
+        return match;
+      });
+    }
+
+    return matchList.filter((match: Match) => {
+      const teamId: number = match[`${teamType}TeamId` as keyof Match];
+      if (teamId !== team.id) return;
+      return match;
+    });
   }
 
-  private static calcTotalHomeVictories(matchList: IMatch[]): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (homeTeamGoals > awayTeamGoals ? acc + 1 : acc),
-      0,
-    );
-  }
-
-  private static calcTotalAwayLosses(matchList: IMatch[]): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (awayTeamGoals < homeTeamGoals ? acc + 1 : acc),
-      0,
-    );
-  }
-
-  private static calcTotalHomeLosses(matchList: IMatch[]): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (homeTeamGoals < awayTeamGoals ? acc + 1 : acc),
-      0,
-    );
-  }
-
-  private static calcTotalDraws(matchList: IMatch[]): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (homeTeamGoals === awayTeamGoals ? acc + 1 : acc),
-      0,
-    );
-  }
-
-  private static calcAwayGoals(
-    matchList: IMatch[],
-    type = 'favor' || 'own',
+  private static calcVictoriesAndLosses(
+    matchList: Match[],
+    teamId: number,
+    type: 'victories' | 'losses',
   ): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (type === 'favor' ? acc + awayTeamGoals : acc + homeTeamGoals),
-      0,
-    );
+    return matchList.reduce((acc: number, match: Match) => {
+      const { homeTeamGoals, awayTeamGoals, homeTeamId } = match;
+      const teamGoals = homeTeamId === teamId ? homeTeamGoals : awayTeamGoals;
+      const adversaryGoals = homeTeamId !== teamId ? homeTeamGoals : awayTeamGoals;
+
+      let totalVictories: number = acc;
+      let totalLosses: number = acc;
+
+      totalVictories += teamGoals > adversaryGoals ? 1 : 0;
+      totalLosses += teamGoals < adversaryGoals ? 1 : 0;
+
+      return type === 'victories' ? totalVictories : totalLosses;
+    }, 0);
   }
 
-  private static calcHomeGoals(
-    matchList: IMatch[],
-    type = 'favor' || 'own',
-  ): number {
-    return matchList.reduce(
-      (acc, { homeTeamGoals, awayTeamGoals }) =>
-        (type === 'favor' ? acc + homeTeamGoals : acc + awayTeamGoals),
-      0,
-    );
+  private static calcDraws(matchList: Match[]): number {
+    return matchList.reduce((acc: number, match: Match) => {
+      const { homeTeamGoals, awayTeamGoals } = match;
+      let totalDraws: number = acc;
+      totalDraws += homeTeamGoals === awayTeamGoals ? 1 : 0;
+      return totalDraws;
+    }, 0);
   }
 
-  private static calcGoalsBalance(
-    matchList: IMatch[],
-    matchLocation: TMatchLocation,
-  ): number {
-    const goalsFavor = matchLocation === 'home'
-      ? LeaderboardService.calcHomeGoals(matchList, 'favor')
-      : LeaderboardService.calcAwayGoals(matchList, 'favor');
+  private static calcTotalPoints(matchList: Match[], teamId: number):number {
+    const { calcVictoriesAndLosses, calcDraws } = LeaderboardService;
+    const totalVictories = calcVictoriesAndLosses(matchList, teamId, 'victories');
+    const totalDraws = calcDraws(matchList);
+    return (totalVictories * 3) + totalDraws;
+  }
 
-    const goalsOwn = matchLocation === 'home'
-      ? LeaderboardService.calcHomeGoals(matchList, 'own')
-      : LeaderboardService.calcAwayGoals(matchList, 'own');
+  private static calcGoals(matchList: Match[], teamId: number, type: 'favor' | 'own'): number {
+    return matchList.reduce((acc: number, match: Match) => {
+      const { homeTeamId, homeTeamGoals, awayTeamGoals } = match;
 
+      let totalGoals = acc;
+
+      if (type === 'favor') {
+        const teamGoals = homeTeamId === teamId ? homeTeamGoals : awayTeamGoals;
+        totalGoals += teamGoals;
+        return totalGoals;
+      }
+
+      const adversaryGoals = homeTeamId === teamId ? awayTeamGoals : homeTeamGoals;
+      totalGoals += adversaryGoals;
+      return totalGoals;
+    }, 0);
+  }
+
+  private static calcGoalsBalance(matchList: Match[], teamId: number): number {
+    const { calcGoals } = LeaderboardService;
+    const goalsFavor = calcGoals(matchList, teamId, 'favor');
+    const goalsOwn = calcGoals(matchList, teamId, 'own');
     return goalsFavor - goalsOwn;
   }
 
-  private static calcTotalPoints(
-    matchList: IMatch[],
-    matchLocation: TMatchLocation,
-  ): number {
-    const totalVictories = matchLocation === 'home'
-      ? LeaderboardService.calcTotalHomeVictories(matchList)
-      : LeaderboardService.calcTotalAwayVictories(matchList);
-
-    const totalDraws = LeaderboardService.calcTotalDraws(matchList);
-    return totalVictories * 3 + totalDraws;
-  }
-
-  private static calcEfficiency(
-    matchList: IMatch[],
-    matchLocation: TMatchLocation,
-  ): string {
-    const totalPoints = LeaderboardService.calcTotalPoints(
-      matchList,
-      matchLocation,
-    );
+  private static calcEfficiency(matchList: Match[], teamId: number): string {
+    const { calcTotalPoints } = LeaderboardService;
+    const totalPoints = calcTotalPoints(matchList, teamId);
     const totalGames = matchList.length;
-    const totalEfficiency = (totalPoints / (totalGames * 3)) * 100;
-    return totalEfficiency.toFixed(2);
+    const efficiency = (totalPoints / (totalGames * 3)) * 100;
+    return efficiency.toFixed(2);
   }
 
-  private async findAllHomeMatchByTeam(team: Team): Promise<Match[]> {
-    const matchList: Match[] = await this._matchModel.findAll({
-      where: {
-        homeTeamId: team.id,
-        inProgress: false,
-      },
-    });
-
-    return matchList;
-  }
-
-  private async findAllAwayMatchByTeam(team: Team): Promise<Match[]> {
-    const matchList: Match[] = await this._matchModel.findAll({
-      where: {
-        awayTeamId: team.id,
-        inProgress: false,
-      },
-    });
-
-    return matchList;
-  }
-
-  private async createHomeLeaderboard(team: Team) {
-    const matchList: Match[] = await this.findAllHomeMatchByTeam(team);
+  private static createNewTeam(matchList: Match[], team: Team) {
+    const {
+      calcVictoriesAndLosses, calcDraws,
+      calcTotalPoints, calcGoals,
+      calcGoalsBalance, calcEfficiency,
+    } = LeaderboardService;
 
     return {
       name: team.teamName,
-      totalPoints: LeaderboardService.calcTotalPoints(matchList, 'home'),
+      totalPoints: calcTotalPoints(matchList, team.id),
       totalGames: matchList.length,
-      totalVictories: LeaderboardService.calcTotalHomeVictories(matchList),
-      totalDraws: LeaderboardService.calcTotalDraws(matchList),
-      totalLosses: LeaderboardService.calcTotalHomeLosses(matchList),
-      goalsFavor: LeaderboardService.calcHomeGoals(matchList, 'favor'),
-      goalsOwn: LeaderboardService.calcHomeGoals(matchList, 'own'),
-      goalsBalance: LeaderboardService.calcGoalsBalance(matchList, 'home'),
-      efficiency: LeaderboardService.calcEfficiency(matchList, 'home'),
-    };
-  }
-
-  private async createAwayLeaderboard(team: Team) {
-    const matchList: Match[] = await this.findAllAwayMatchByTeam(team);
-
-    return {
-      name: team.teamName,
-      totalPoints: LeaderboardService.calcTotalPoints(matchList, 'away'),
-      totalGames: matchList.length,
-      totalVictories: LeaderboardService.calcTotalAwayVictories(matchList),
-      totalDraws: LeaderboardService.calcTotalDraws(matchList),
-      totalLosses: LeaderboardService.calcTotalAwayLosses(matchList),
-      goalsFavor: LeaderboardService.calcAwayGoals(matchList, 'favor'),
-      goalsOwn: LeaderboardService.calcAwayGoals(matchList, 'own'),
-      goalsBalance: LeaderboardService.calcGoalsBalance(matchList, 'away'),
-      efficiency: LeaderboardService.calcEfficiency(matchList, 'away'),
+      totalVictories: calcVictoriesAndLosses(matchList, team.id, 'victories'),
+      totalDraws: calcDraws(matchList),
+      totalLosses: calcVictoriesAndLosses(matchList, team.id, 'losses'),
+      goalsFavor: calcGoals(matchList, team.id, 'favor'),
+      goalsOwn: calcGoals(matchList, team.id, 'own'),
+      goalsBalance: calcGoalsBalance(matchList, team.id),
+      efficiency: calcEfficiency(matchList, team.id),
     };
   }
 
@@ -182,67 +133,22 @@ export default class LeaderboardService implements ILeaderboardService {
     );
   }
 
-  public async getHomeLeaderboard(): Promise<ILeaderboardRow[]> {
-    const teamList: Team[] = await this._teamModel.findAll();
+  public async getLeaderboard(
+    teamType: TTeamType,
+  ): Promise<ILeaderboardRow[]> {
+    const teamList = await this._teamModel.findAll();
+    const matchList = await this._matchModel.findAll({
+      where: { inProgress: false },
+    });
+    const { sortLeaderboard } = LeaderboardService;
 
-    const leaderboard: ILeaderboardRow[] = await Promise.all(
-      teamList.map(async (team) => this.createHomeLeaderboard(team)),
-    );
+    const leaderboard = teamList.map((team: Team) => {
+      const { createNewTeam, getTeamMatchList } = LeaderboardService;
+      const teamMatchList = getTeamMatchList(team, teamType, matchList);
+      const newTeam = createNewTeam(teamMatchList, team);
+      return newTeam;
+    });
 
-    return LeaderboardService.sortLeaderboard(leaderboard);
-  }
-
-  public async getAwayLeaderboard(): Promise<ILeaderboardRow[]> {
-    const teamList: Team[] = await this._teamModel.findAll();
-
-    const leaderboard: ILeaderboardRow[] = await Promise.all(
-      teamList.map(async (team) => this.createAwayLeaderboard(team)),
-    );
-
-    return LeaderboardService.sortLeaderboard(leaderboard);
-  }
-
-  public static createNewTeam(
-    teamName: string,
-    homeTeam: ILeaderboardRow,
-    awayTeam: ILeaderboardRow,
-  ): ILeaderboardRow {
-    const newTeam: ILeaderboardRow = {
-      name: teamName,
-      totalPoints: homeTeam.totalPoints + awayTeam.totalPoints,
-      totalGames: homeTeam.totalGames + awayTeam.totalGames,
-      totalVictories: homeTeam.totalVictories + awayTeam.totalVictories,
-      totalDraws: homeTeam.totalDraws + awayTeam.totalDraws,
-      totalLosses: homeTeam.totalLosses + awayTeam.totalLosses,
-      goalsFavor: homeTeam.goalsFavor + awayTeam.goalsFavor,
-      goalsOwn: homeTeam.goalsOwn + awayTeam.goalsOwn,
-      goalsBalance: homeTeam.goalsBalance + awayTeam.goalsBalance,
-      efficiency: '',
-    };
-
-    newTeam.efficiency = ((newTeam.totalPoints / (newTeam.totalGames * 3)) * 100).toFixed(2);
-
-    return newTeam;
-  }
-
-  public async getLeaderboard(): Promise<ILeaderboardRow[]> {
-    const teamList: Team[] = await this._teamModel.findAll();
-    const leaderboard: ILeaderboardRow[] = await Promise.all(
-      teamList.map(async ({ teamName }) => {
-        const homeLeaderboard = await this.getHomeLeaderboard();
-        const awayLeaderboard = await this.getAwayLeaderboard();
-        const indexOfHomeTeam = homeLeaderboard.findIndex(
-          ({ name }) => name === teamName,
-        );
-        const indexOfAwayTeam = awayLeaderboard.findIndex(
-          ({ name }) => name === teamName,
-        );
-        const homeTeam = homeLeaderboard[indexOfHomeTeam];
-        const awayTeam = awayLeaderboard[indexOfAwayTeam];
-        const newTeam = LeaderboardService.createNewTeam(teamName, homeTeam, awayTeam);
-        return newTeam;
-      }),
-    );
-    return LeaderboardService.sortLeaderboard(leaderboard);
+    return sortLeaderboard(leaderboard);
   }
 }

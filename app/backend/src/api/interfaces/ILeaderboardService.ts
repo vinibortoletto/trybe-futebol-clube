@@ -1,7 +1,6 @@
+import TTeamType from '../types/TTeamType';
 import ILeaderboardRow from './ILeaderboardRow';
 
 export default interface ILeaderboardService {
-  getHomeLeaderboard(): Promise<ILeaderboardRow[]>;
-  getAwayLeaderboard(): Promise<ILeaderboardRow[]>;
-  getLeaderboard(): Promise<ILeaderboardRow[]>;
+  getLeaderboard(teamType:TTeamType): Promise<ILeaderboardRow[]>;
 }
