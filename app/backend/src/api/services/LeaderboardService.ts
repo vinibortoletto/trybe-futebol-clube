@@ -40,13 +40,9 @@ export default class LeaderboardService implements ILeaderboardService {
       const teamGoals = homeTeamId === teamId ? homeTeamGoals : awayTeamGoals;
       const adversaryGoals = homeTeamId !== teamId ? homeTeamGoals : awayTeamGoals;
 
-      let totalVictories: number = acc;
-      let totalLosses: number = acc;
-
-      totalVictories += teamGoals > adversaryGoals ? 1 : 0;
-      totalLosses += teamGoals < adversaryGoals ? 1 : 0;
-
-      return type === 'victories' ? totalVictories : totalLosses;
+      return type === 'victories'
+        ? acc + (teamGoals > adversaryGoals ? 1 : 0)
+        : acc + (teamGoals < adversaryGoals ? 1 : 0);
     }, 0);
   }
 
