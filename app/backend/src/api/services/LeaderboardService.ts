@@ -1,8 +1,7 @@
 import { ModelStatic } from 'sequelize';
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
-import ILeaderboardRow from '../interfaces/ILeaderboardRow';
-import { ILeaderboardService } from '../interfaces';
+import { ILeaderboardService, ILeaderboardRow } from '../interfaces';
 import TTeamType from '../types/TTeamType';
 
 export default class LeaderboardService implements ILeaderboardService {
@@ -16,7 +15,7 @@ export default class LeaderboardService implements ILeaderboardService {
   ): Match[] {
     return matchList.filter((match: Match) => {
       const { homeTeamId, awayTeamId } = match;
-      const teamId = match[`${teamType}TeamId` as keyof Match];
+      const teamId: number = match[`${teamType}TeamId` as keyof Match];
 
       return (
         teamType === 'both'
@@ -33,8 +32,12 @@ export default class LeaderboardService implements ILeaderboardService {
   ): number {
     return matchList.reduce((acc: number, match: Match) => {
       const { homeTeamGoals, awayTeamGoals, homeTeamId } = match;
-      const teamGoals = homeTeamId === teamId ? homeTeamGoals : awayTeamGoals;
-      const adversaryGoals = homeTeamId !== teamId ? homeTeamGoals : awayTeamGoals;
+
+      const teamGoals: number = homeTeamId === teamId
+        ? homeTeamGoals : awayTeamGoals;
+
+      const adversaryGoals: number = homeTeamId !== teamId
+        ? homeTeamGoals : awayTeamGoals;
 
       return type === 'victories'
         ? acc + (teamGoals > adversaryGoals ? 1 : 0)
@@ -44,14 +47,17 @@ export default class LeaderboardService implements ILeaderboardService {
 
   private static calcDraws(matchList: Match[]): number {
     return matchList.filter(
-      (match) => match.homeTeamGoals === match.awayTeamGoals,
+      (match: Match) => match.homeTeamGoals === match.awayTeamGoals,
     ).length;
   }
 
-  private static calcTotalPoints(matchList: Match[], teamId: number):number {
+  private static calcTotalPoints(
+    matchList: Match[],
+    teamId: number,
+  ):number {
     const { calcVictoriesAndLosses, calcDraws } = LeaderboardService;
-    const totalVictories = calcVictoriesAndLosses(matchList, teamId, 'victories');
-    const totalDraws = calcDraws(matchList);
+    const totalVictories: number = calcVictoriesAndLosses(matchList, teamId, 'victories');
+    const totalDraws: number = calcDraws(matchList);
     return (totalVictories * 3) + totalDraws;
   }
 
@@ -71,16 +77,16 @@ export default class LeaderboardService implements ILeaderboardService {
 
   private static calcGoalsBalance(matchList: Match[], teamId: number): number {
     const { calcGoals } = LeaderboardService;
-    const goalsFavor = calcGoals(matchList, teamId, 'favor');
-    const goalsOwn = calcGoals(matchList, teamId, 'own');
+    const goalsFavor: number = calcGoals(matchList, teamId, 'favor');
+    const goalsOwn: number = calcGoals(matchList, teamId, 'own');
     return goalsFavor - goalsOwn;
   }
 
   private static calcEfficiency(matchList: Match[], teamId: number): string {
     const { calcTotalPoints } = LeaderboardService;
-    const totalPoints = calcTotalPoints(matchList, teamId);
-    const totalGames = matchList.length;
-    const efficiency = (totalPoints / (totalGames * 3)) * 100;
+    const totalPoints: number = calcTotalPoints(matchList, teamId);
+    const totalGames: number = matchList.length;
+    const efficiency: number = (totalPoints / (totalGames * 3)) * 100;
     return efficiency.toFixed(2);
   }
 
@@ -127,15 +133,17 @@ export default class LeaderboardService implements ILeaderboardService {
       getTeamMatchList,
     } = LeaderboardService;
 
-    const teamList = await this._teamModel.findAll();
-    const matchList = await this._matchModel.findAll({
+    const teamList: Team[] = await this._teamModel.findAll();
+    const matchList: Match[] = await this._matchModel.findAll({
       where: { inProgress: false },
     });
 
-    const leaderboard = teamList.map((team: Team) => {
-      const teamMatchList = getTeamMatchList(team, teamType, matchList);
-      return createNewTeam(teamMatchList, team);
-    });
+    const leaderboard: ILeaderboardRow[] = teamList.map(
+      (team: Team) => {
+        const teamMatchList: Match[] = getTeamMatchList(team, teamType, matchList);
+        return createNewTeam(teamMatchList, team);
+      },
+    );
 
     return sortLeaderboard(leaderboard);
   }
