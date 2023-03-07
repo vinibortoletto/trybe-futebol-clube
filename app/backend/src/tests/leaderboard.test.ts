@@ -9,6 +9,7 @@ import { OK } from '../utils/httpStatusCodes';
 import { leaderboardMock, teamsMock } from './mocks';
 import Match from '../database/models/MatchModel';
 import Team from '../database/models/TeamModel';
+import { Model } from 'sequelize';
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -18,16 +19,8 @@ describe('Integration tests for route /leaderboard', function () {
 
   describe('getHomeLeaderboard method', function () {
     it('should be able to get home leaderboard', async function () {
-      const findAllMatchStub = sinon.stub(Match, 'findAll');
-      const findAllTeamStub = sinon.stub(Team, 'findAll');
-
-      findAllTeamStub.resolves(teamsMock.teamList)
-      
-      teamsMock.teamList.forEach((_team, index) => {
-        findAllMatchStub
-          .onCall(index)
-          .resolves(leaderboardMock.homeMatchList[index])
-      })
+      sinon.stub(Team, 'findAll').resolves(teamsMock.teamList);
+      sinon.stub(Match, 'findAll').resolves(leaderboardMock.matchList);
 
       const response = await chai.request(app).get('/leaderboard/home');
 
@@ -38,16 +31,8 @@ describe('Integration tests for route /leaderboard', function () {
 
   describe('getAwayLeaderboard method', function () {
     it('should be able to get away leaderboard', async function () {
-      const findAllMatchStub = sinon.stub(Match, 'findAll');
-      const findAllTeamStub = sinon.stub(Team, 'findAll');
-
-      findAllTeamStub.resolves(teamsMock.teamList)
-      
-      teamsMock.teamList.forEach((_team, index) => {
-        findAllMatchStub
-          .onCall(index)
-          .resolves(leaderboardMock.awayMatchList[index])
-      })
+      sinon.stub(Team, 'findAll').resolves(teamsMock.teamList);
+      sinon.stub(Match, 'findAll').resolves(leaderboardMock.matchList);
 
       const response = await chai.request(app).get('/leaderboard/away');
 
@@ -58,6 +43,9 @@ describe('Integration tests for route /leaderboard', function () {
 
   describe('getLeaderboard method', function () {
     it('should be able to get leaderboard', async function () {
+      sinon.stub(Team, 'findAll').resolves(teamsMock.teamList);
+      sinon.stub(Match, 'findAll').resolves(leaderboardMock.matchList);
+
       const response = await chai.request(app).get('/leaderboard/');
       expect(response.body).to.deep.equal(leaderboardMock.leaderboard);
       expect(response.status).to.equal(OK);
