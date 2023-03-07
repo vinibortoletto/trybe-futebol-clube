@@ -16,6 +16,7 @@ import ILeaderboardService from './ILeaderboardService';
 import ILeaderboardRow from './ILeaderboardRow';
 
 import IGoals from './IGoals';
+import ITeam from './ITeam';
 
 export {
   ILoginInfo,
@@ -30,4 +31,5 @@ export {
   ILeaderboardService,
   ILeaderboardRow,
   IGoals,
+  ITeam,
 };
