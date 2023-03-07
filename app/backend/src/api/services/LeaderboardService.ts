@@ -14,19 +14,15 @@ export default class LeaderboardService implements ILeaderboardService {
     teamType: TTeamType,
     matchList: Match[],
   ): Match[] {
-    if (teamType === 'both') {
-      return matchList.filter((match: Match) => {
-        const { homeTeamId } = match;
-        const { awayTeamId } = match;
-        if (homeTeamId !== team.id && awayTeamId !== team.id) return;
-        return match;
-      });
-    }
-
     return matchList.filter((match: Match) => {
-      const teamId: number = match[`${teamType}TeamId` as keyof Match];
-      if (teamId !== team.id) return;
-      return match;
+      const { homeTeamId, awayTeamId } = match;
+      const teamId = match[`${teamType}TeamId` as keyof Match];
+
+      return (
+        teamType === 'both'
+        && (homeTeamId === team.id || awayTeamId === team.id)
+      )
+        || (teamId === team.id);
     });
   }
 
@@ -125,17 +121,20 @@ export default class LeaderboardService implements ILeaderboardService {
   public async getLeaderboard(
     teamType: TTeamType,
   ): Promise<ILeaderboardRow[]> {
+    const {
+      sortLeaderboard,
+      createNewTeam,
+      getTeamMatchList,
+    } = LeaderboardService;
+
     const teamList = await this._teamModel.findAll();
     const matchList = await this._matchModel.findAll({
       where: { inProgress: false },
     });
-    const { sortLeaderboard } = LeaderboardService;
 
     const leaderboard = teamList.map((team: Team) => {
-      const { createNewTeam, getTeamMatchList } = LeaderboardService;
       const teamMatchList = getTeamMatchList(team, teamType, matchList);
-      const newTeam = createNewTeam(teamMatchList, team);
-      return newTeam;
+      return createNewTeam(teamMatchList, team);
     });
 
     return sortLeaderboard(leaderboard);
