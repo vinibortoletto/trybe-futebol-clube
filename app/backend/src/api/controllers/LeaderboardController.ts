@@ -7,9 +7,8 @@ export default class LeaderboardController implements ILeaderboardController {
   constructor(private _service: ILeaderboardService) {}
 
   public async getLeaderboard(req: Request, res: Response, next: NextFunction) {
-    const route = req.url.replace(/\//g, '').replace('leaderboard', '');
-    const teamType = route || 'both';
-    console.log(route);
+    const route: string = req.url.replace(/\//g, '').replace('leaderboard', '');
+    const teamType: string = route || 'both';
 
     try {
       const leaderboardList = await this._service.getLeaderboard(teamType as TTeamType);
