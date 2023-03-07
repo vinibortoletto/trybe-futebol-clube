@@ -1,6 +1,6 @@
-import Team from '../../database/models/TeamModel';
+import ITeam from './ITeam';
 
 export default interface ITeamService {
-  findAll(): Promise<Team[]>;
-  findById(id: number): Promise<Team | null>;
+  findAll(): Promise<ITeam[]>;
+  findById(id: number): Promise<ITeam>;
 }
