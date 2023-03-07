@@ -2,19 +2,17 @@ import { ModelStatic } from 'sequelize';
 import { invalidTeam, sameTeams } from '../../utils/errorMessages';
 import Team from '../../database/models/TeamModel';
 import Match from '../../database/models/MatchModel';
-import { IMatch, IMatchService } from '../interfaces';
-import IGoals from '../interfaces/IGoals';
-import UnprocessableContent from '../errors/UnprocessableContent';
-import NotFound from '../errors/NotFound';
+import { IGoals, IMatch, IMatchService, ITeam } from '../interfaces';
+import { UnprocessableContent, NotFound } from '../errors';
 
 export default class MatchService implements IMatchService {
   private _model: ModelStatic<Match> = Match;
   private static _teamModel: ModelStatic<Team> = Team;
 
-  public async findAll(inProgress: string): Promise<Match[]> {
+  public async findAll(inProgress: string): Promise<IMatch[]> {
     const condition = inProgress ? { inProgress: JSON.parse(inProgress) } : {};
 
-    const matchList = await this._model.findAll({
+    const matchList: IMatch[] = await this._model.findAll({
       include: [
         { model: Team, as: 'homeTeam', attributes: ['teamName'] },
         { model: Team, as: 'awayTeam', attributes: ['teamName'] },
@@ -46,7 +44,7 @@ export default class MatchService implements IMatchService {
     homeTeamId,
     awayTeamId,
   }: IMatch): void {
-    const areTeamsTheSame = homeTeamId === awayTeamId;
+    const areTeamsTheSame: boolean = homeTeamId === awayTeamId;
     if (areTeamsTheSame) throw new UnprocessableContent(sameTeams);
   }
 
@@ -54,21 +52,24 @@ export default class MatchService implements IMatchService {
     homeTeamId,
     awayTeamId,
   }: IMatch): Promise<void> {
-    const promises = [homeTeamId, awayTeamId].map(async (id) =>
-      this._teamModel.findByPk(id));
+    const promises: Promise<ITeam | null>[] = [homeTeamId, awayTeamId]
+      .map(async (id) => this._teamModel.findByPk(id));
 
-    const teamList = await Promise.all(promises);
+    const teamList: (ITeam | null)[] = await Promise.all(promises);
 
     if (teamList.some((team) => !team)) {
       throw new NotFound(invalidTeam);
     }
   }
 
-  public async create(newMatch: IMatch): Promise<Match> {
+  public async create(newMatch: IMatch): Promise<IMatch> {
     MatchService.validateIfTeamsAreTheSame(newMatch);
     await MatchService.validateIfTeamsExist(newMatch);
 
-    const match = await this._model.create({ ...newMatch, inProgress: true });
+    const match: IMatch = await this._model.create(
+      { ...newMatch, inProgress: true },
+    );
+
     return match;
   }
 }
