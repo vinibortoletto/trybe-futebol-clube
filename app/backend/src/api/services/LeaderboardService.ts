@@ -51,12 +51,9 @@ export default class LeaderboardService implements ILeaderboardService {
   }
 
   private static calcDraws(matchList: Match[]): number {
-    return matchList.reduce((acc: number, match: Match) => {
-      const { homeTeamGoals, awayTeamGoals } = match;
-      let totalDraws: number = acc;
-      totalDraws += homeTeamGoals === awayTeamGoals ? 1 : 0;
-      return totalDraws;
-    }, 0);
+    return matchList.filter(
+      (match) => match.homeTeamGoals === match.awayTeamGoals,
+    ).length;
   }
 
   private static calcTotalPoints(matchList: Match[], teamId: number):number {
