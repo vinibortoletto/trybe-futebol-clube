@@ -9,8 +9,14 @@ const { expect } = chai;
 import { app } from '../app';
 import { Model } from 'sequelize';
 import { matchesMock, usersMock } from './mocks';
-import { CREATED, NOT_FOUND, OK, UNPROCESSABLE_CONTENT } from '../utils/httpStatusCodes';
+import {
+  CREATED,
+  NOT_FOUND,
+  OK,
+  UNPROCESSABLE_CONTENT,
+} from '../utils/httpStatusCodes';
 import { invalidTeam, sameTeams } from '../utils/errorMessages';
+import TokenHandler from '../utils/TokenHandler';
 
 describe('Integration tests for route /matches', function () {
   afterEach(() => sinon.restore());
@@ -27,6 +33,9 @@ describe('Integration tests for route /matches', function () {
   describe('finish method', function () {
     it('should be able to finish a match', async function () {
       sinon.stub(Model, 'update').resolves([1]);
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
+
       const response = await chai
         .request(app)
         .patch('/matches/1/finish')
@@ -40,6 +49,8 @@ describe('Integration tests for route /matches', function () {
   describe('update method', function () {
     it('should be able to update a match in progress', async function () {
       sinon.stub(Model, 'update').resolves([1]);
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
 
       const response = await chai
         .request(app)
@@ -55,6 +66,8 @@ describe('Integration tests for route /matches', function () {
   describe('create method', function () {
     it('should be able to create a new match', async function () {
       sinon.stub(Model, 'create').resolves(matchesMock.matchResponse);
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
 
       const response = await chai
         .request(app)
@@ -67,24 +80,30 @@ describe('Integration tests for route /matches', function () {
     });
 
     it('should fail to create a new match with both teams being the same', async function () {
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
+
       const response = await chai
         .request(app)
         .post('/matches')
         .send(matchesMock.matchWithSameTeams)
         .set('Authorization', usersMock.validToken);
 
-      expect(response.body).to.deep.equal({message: sameTeams});
+      expect(response.body).to.deep.equal({ message: sameTeams });
       expect(response.status).to.equal(UNPROCESSABLE_CONTENT);
     });
 
     it('should fail to create a new match with a team that does not exists', async function () {
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
+
       const response = await chai
         .request(app)
         .post('/matches')
         .send(matchesMock.matchWithInvalidTeams)
         .set('Authorization', usersMock.validToken);
 
-      expect(response.body).to.deep.equal({message: invalidTeam});
+      expect(response.body).to.deep.equal({ message: invalidTeam });
       expect(response.status).to.equal(NOT_FOUND);
     });
   });

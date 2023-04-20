@@ -15,7 +15,8 @@ import {
   requiredFields,
   tokenNotFound,
 } from '../utils/errorMessages';
-import * as jwt from 'jsonwebtoken'
+import * as jwt from 'jsonwebtoken';
+import TokenHandler from '../utils/TokenHandler';
 
 chai.use(chaiHttp);
 const { expect } = chai;
@@ -30,8 +31,8 @@ describe('Integration tests for route /login and /users', function () {
         .post('/login')
         .send(usersMock.loginInfoWithoutEmail);
 
-        expect(response.body).to.deep.equal({message: requiredFields});
-        expect(response.status).to.equal(BAD_REQUEST);
+      expect(response.body).to.deep.equal({ message: requiredFields });
+      expect(response.status).to.equal(BAD_REQUEST);
     });
 
     it('should fail to login if no password received', async function () {
@@ -40,7 +41,7 @@ describe('Integration tests for route /login and /users', function () {
         .post('/login')
         .send(usersMock.loginInfoWithoutPassword);
 
-      expect(response.body).to.deep.equal({message: requiredFields});
+      expect(response.body).to.deep.equal({ message: requiredFields });
       expect(response.status).to.equal(BAD_REQUEST);
     });
 
@@ -50,7 +51,7 @@ describe('Integration tests for route /login and /users', function () {
         .post('/login')
         .send(usersMock.loginInfoWithInvalidEmail);
 
-      expect(response.body).to.deep.equal({message: invalidFields});
+      expect(response.body).to.deep.equal({ message: invalidFields });
       expect(response.status).to.equal(UNAUTHORIZED);
     });
 
@@ -60,7 +61,7 @@ describe('Integration tests for route /login and /users', function () {
         .post('/login')
         .send(usersMock.loginInfoWithInvalidPassword);
 
-      expect(response.body).to.deep.equal({message: invalidFields});
+      expect(response.body).to.deep.equal({ message: invalidFields });
       expect(response.status).to.equal(UNAUTHORIZED);
     });
 
@@ -93,6 +94,8 @@ describe('Integration tests for route /login and /users', function () {
     it('should be able to login', async function () {
       sinon.stub(Model, 'findOne').resolves(usersMock.user);
       sinon.stub(bcrypt, 'compareSync').resolves(true);
+      sinon.stub(TokenHandler, 'generate').returns(usersMock.validToken);
+      sinon.stub(TokenHandler, 'decode').returns(usersMock.validLoginInfo);
 
       const response = await chai
         .request(app)
@@ -125,8 +128,8 @@ describe('Integration tests for route /login and /users', function () {
     });
 
     it('should be able to get role', async function () {
-      sinon.stub(Model, 'findOne').resolves(usersMock.user)
-      sinon.stub(jwt, 'verify').resolves(usersMock.user)
+      sinon.stub(Model, 'findOne').resolves(usersMock.user);
+      sinon.stub(jwt, 'verify').resolves(usersMock.user);
 
       const response = await chai
         .request(app)

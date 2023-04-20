@@ -8,11 +8,7 @@ import { Unauthorized } from '../errors';
 const schema = joi.string().required();
 
 export default class ValidateToken {
-  public static validate(
-    req: Request,
-    _res: Response,
-    next: NextFunction,
-  ) {
+  public static validate(req: Request, _res: Response, next: NextFunction) {
     const { authorization } = req.headers;
     const { error } = schema.validate(authorization);
 
